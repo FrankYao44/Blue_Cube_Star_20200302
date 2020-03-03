@@ -16,11 +16,11 @@ from config import configs
 try:
     from take_picture import take_picture
 except ModuleNotFoundError:
-    take_picture = configs['picture']['picture_index']
+    take_picture = lambda: configs['picture']['picture_index']
 
 
 PATH = os.path.abspath('.')
-_IP = 'http://127.0.0.1:9000/atomheart'
+_IP = configs['IP']
 _BPS = {}
 
 
@@ -109,10 +109,6 @@ class ReactFunc(object):
             else:
                 self.num = 0
                 self.load_result[0]()
-    def key_killer(self):
-        self.present_id = -1
-        self.load_result = -1
-        self.num = -1
 
     def save(self):
         try:
@@ -137,13 +133,17 @@ class ReactFunc(object):
     def dele(self):
         if self.warn_event('warning', 'are you sure to delete it?'):
             rs = connector('del', subject=self.subject, id=self.present_id)
+            self.go_blank()
+            self.present_result = {'belong_to': '', 'level': 0, 'text': '', 'addition': ''}
 
-            if rs.text != None:
+            if rs.text is not None:
                 self.status.setText('have deleted')
 
     def load_function(self, title, text, where):
         self.check_change()
         result, ok = QInputDialog.getText(self, title, text)
+        if result == '' and where != 'all':
+            return
         if ok:
             if where == 'all':
                 rs = connector('out', subject=self.subject)
